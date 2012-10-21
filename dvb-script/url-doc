@@ -1,0 +1,11 @@
+Herrausfinden des richtigen Haltestellennamen
+
+http://widgets.vvo-online.de/abfahrtsmonitor/Haltestelle.do?ort=dresden&hst="bertholt-haupt-str"
+
+Holen der aktuellen Abfahrtszeiten
+
+http://widgets.vvo-online.de/abfahrtsmonitor/Abfahrten.do?ort=dresden&hst="bertholt-haupt-str"
+
+Lierfert die moeglichen Verkehrsmittel
+
+http://widgets.vvo-online.de/abfahrtsmonitor/Verkehrsmittel.do
