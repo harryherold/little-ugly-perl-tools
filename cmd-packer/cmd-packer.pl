@@ -11,23 +11,37 @@ sub xtar($$)
   unless(-e $src) {
     print "No file found\n";
   }
-  unless(-e $dest) {
+  unless( -e $dest && $dest eq "." ) {
     `mkdir $dest`;
   }
+  if( $dest eq "." ) {
+    `tar xvf $src`;
+  } else {
+  `tar xvf $src -C $dest`;
+  }
 }
-sub ctar ()
+sub ctar ($$)
 {
-  print "Packen tar\n";
+  my $src = shift;
+  my $dest = shift;
+  `tar cvf $dest $src`;
 }
-
+sub xtargz($$)
+{
+  print "extract tar.gz\n";
+}
+sub ctargz($$)
+{
+  print "compress tar.gz\n";
+}
 my %archives = (
   "tar" => {
     "extract" => \&xtar,
     "compress" => \&ctar,
   },
+  "tar.gz" => {
+    "extract" => \&xtargz,
+    "compress" => \&ctargz,
+  },
 );
-
-$archives{"tar"}{"extract"}("/home/harry/slices.pl","HAHA");
-
-
-# Whats the context directory
+$archives{"tar"}{"extract"}("hallo.tar",".");
