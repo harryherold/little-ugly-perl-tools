@@ -1,5 +1,6 @@
 #!/usr/bin/perl
-
+#support:
+# tar, tar.gz, tar.bz2, gz, bz2 ,zip, rar,
 use strict;
 use warnings;
 use Data::Dumper;
@@ -8,23 +9,29 @@ sub xtar($$)
 {
   my $src = shift;
   my $dest = shift;
+  my @cmd =("tar","xvf",);
   unless(-e $src) {
     print "No file found\n";
+    exit 0;
   }
-  unless( -e $dest && $dest eq "." ) {
+  push(@cmd, $src);
+  unless( -d $dest ) {
     `mkdir $dest`;
   }
   if( $dest eq "." ) {
-    `tar xvf $src`;
+    system(@cmd) == 0
+      or die "cmd  @cmd failed: $?";
   } else {
-  `tar xvf $src -C $dest`;
+    push(@cmd, "-C".$dest);
+    system(@cmd) == 0
+      or die "cmd  @cmd failed: $?";
   }
 }
 sub ctar ($$)
 {
-  my $src = shift;
-  my $dest = shift;
-  `tar cvf $dest $src`;
+  my @cmd = ("tar","cvf",$_[1],$_[0]);
+  system(@cmd) == 0
+    or die "cmd  @cmd failed: $?";
 }
 sub xtargz($$)
 {
@@ -44,4 +51,4 @@ my %archives = (
     "compress" => \&ctargz,
   },
 );
-$archives{"tar"}{"extract"}("hallo.tar",".");
+$archives{"tar"}{"extract"}("hallo.tar","bier");
