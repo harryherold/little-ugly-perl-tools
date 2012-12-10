@@ -1,11 +1,11 @@
 #!/usr/bin/perl
 # cmd-packer [-c ]/[-x] src dest
 #supports:
-# tar 
+# tar
 # tar.gz
 # tar.bz2
 #next support:
-# gz 
+# gz
 # bz2
 # zip
 # rar
@@ -40,6 +40,7 @@ sub xtar($$)
       or die "cmd  @cmd failed: $?";
   }
 }
+
 sub ctar ($$)
 {
   my @cmd = ("tar",);
@@ -59,6 +60,40 @@ sub ctar ($$)
   system(@cmd) == 0
     or die "cmd  @cmd failed: $?";
 }
+# gzip -c getopt.* > hoho.gz
+sub cgz ($$)
+{
+  my @cmd = ("gzip","-c",);
+  my $src = shift;
+  my $dest = shift;
+  unless(-e $src || -d $src) {
+    print "No file/directory found\n";
+    exit 0;
+  }
+  print "compress gz\n";
+}
+
+sub xgz ($$)
+{
+  my @cmd = ("tar",);
+  my $src = shift;
+  my $dest = shift;
+  unless(-e $src || -d $src) {
+    print "No file/directory found\n";
+    exit 0;
+  }
+  unless(-d $dest) {
+     `mkdir $dest`;
+  }
+  if( $dest eq "." ) {
+    system(@cmd) == 0
+      or die "cmd  @cmd failed: $?";
+  } else {
+    push(@cmd, "-C".$dest);
+    system(@cmd) == 0
+      or die "cmd  @cmd failed: $?";
+  }
+}
 
 if( @ARGV != 3 ){
   print "Wrong argument count\n";
@@ -74,6 +109,9 @@ my %archives = (
   "tar" => {
     "-x" => \&xtar,
     "-c" => \&ctar,
+  },
+  "gz" => {
+    "-x" => \&xgz,
   },
 );
 my $src = $ARGV[1];

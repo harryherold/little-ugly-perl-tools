@@ -20,7 +20,8 @@ sub selectStation(@)
 }
 sub getFullStationName($)
 {
-  my $response = get 'http://widgets.vvo-online.de/abfahrtsmonitor/Haltestelle.do?ort=dresden&hst="'.shift.'"';
+  my $hst = shift;
+  my $response = get 'http://widgets.vvo-online.de/abfahrtsmonitor/Haltestelle.do?ort=dresden&hst="'.$hst.'"';
   my $json = JSON::PP->new;
   my @data = $json->decode($response);
 
