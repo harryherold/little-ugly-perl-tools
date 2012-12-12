@@ -1,102 +1,67 @@
 #!/usr/bin/perl
-# cmd-packer [-c ]/[-x] src dest
+# cmd-packer [-c ]/[-x] dest src
 #supports:
 # tar
 # tar.gz
 # tar.bz2
+# tar.xv
 #next support:
-# gz
-# bz2
 # zip
 # rar
 use strict;
 use warnings;
 use Data::Dumper;
+use Switch;
 
 sub xtar($$)
 {
   my $src = shift;
   my $dest = shift;
-  my @cmd =("tar",);
+  my $cmd = "tar xfv";
+
   if( defined $_[2] ) {
-	push(@cmd,"xfv".$_[2]);
-  } else {
-	push(@cmd,"xfv");
+    $cmd .= $_[2];
   }
-  unless(-e $src) {
-    print "No file found\n";
-    exit 0;
-  }
-  push(@cmd, $src);
+  $cmd .= " $src";
   unless( -d $dest ) {
     `mkdir $dest`;
   }
-  if( $dest eq "." ) {
-    system(@cmd) == 0
-      or die "cmd  @cmd failed: $?";
-  } else {
-    push(@cmd, "-C".$dest);
-    system(@cmd) == 0
-      or die "cmd  @cmd failed: $?";
-  }
+  `$cmd -C $dest`;
 }
 
 sub ctar ($$)
 {
-  my @cmd = ("tar",);
+  my $cmd = "tar cfv";
   my $src = shift;
   my $dest = shift;
-  unless(-e $src || -d $src) {
-    print "No file/directory found\n";
-    exit 0;
-  }
+
   if( defined $_[2] ) {
-    push(@cmd,"cfv".$_[2]);
-  } else {
-    push(@cmd,"cfv");
+    $cmd .= $_[2];
   }
-  push(@cmd, $dest);
-  push(@cmd, $src);
-  system(@cmd) == 0
-    or die "cmd  @cmd failed: $?";
-}
-# gzip -c getopt.* > hoho.gz
-sub cgz ($$)
-{
-  my @cmd = ("gzip","-c",);
-  my $src = shift;
-  my $dest = shift;
-  unless(-e $src || -d $src) {
-    print "No file/directory found\n";
-    exit 0;
-  }
-  print "compress gz\n";
+  $cmd .= " $dest $src";
+  `$cmd`;
 }
 
-sub xgz ($$)
+sub getTarOption(@)
 {
-  my @cmd = ("tar",);
-  my $src = shift;
-  my $dest = shift;
-  unless(-e $src || -d $src) {
-    print "No file/directory found\n";
-    exit 0;
-  }
-  unless(-d $dest) {
-     `mkdir $dest`;
-  }
-  if( $dest eq "." ) {
-    system(@cmd) == 0
-      or die "cmd  @cmd failed: $?";
-  } else {
-    push(@cmd, "-C".$dest);
-    system(@cmd) == 0
-      or die "cmd  @cmd failed: $?";
-  }
+    my @ext = shift;
+    switch( $ext[2] ) {
+        case "xz" { return "J"}
+        case "gz" { return "z"}
+        case "bz2" { return "j"}
+        else {return ""}
+    }
 }
 
-if( @ARGV != 3 ){
+if( @ARGV < 3 ){
   print "Wrong argument count\n";
+  print "---------------------\n";
+  print "try this :\n";
+  print "cmd-packer <action> <destination> <source>\n";
+  print "action:\n";
+  print "-c => compress\n";
+  print "-x => extract\n";
+  print "supported archives: tar, tar.gz, tar.xv, tar.bz2\n";
   exit 0;
 }
 my $func = $ARGV[0];
@@ -110,13 +75,21 @@ my %archives = (
     "-x" => \&xtar,
     "-c" => \&ctar,
   },
-  "gz" => {
-    "-x" => \&xgz,
-  },
 );
-my $src = $ARGV[1];
-my $dest = $ARGV[2];
-my @ext;
+
+my $dest = $ARGV[1];
+
+for( @ARGV[2..$#ARGV] ) {
+  unless( -e ) {
+    print "File $_ not found\n";
+    exit 0;
+  }
+}
+
+my $src = join(' ', @ARGV[2..$#ARGV]);
+
+my @ext = ();
+
 if( $func eq "-c" ) {
   if ($dest =~ m/^.*\..*/) {
     @ext = split(/\./,$dest,3);
@@ -136,11 +109,10 @@ elsif( $func eq "-x" ) {
   print "Wrong file type\n";
   exit 0;
 }
+
 if( exists $archives{$ext[1]} ) {
   if( scalar(@ext) == 3 && $ext[1] eq "tar" ) {
-    $_ = ($ext[2] eq "gz" || $ext[2] eq "bz2")?
-    ($ext[2] eq "gz") ? "z" : "j" :undef;
-    $archives{$ext[1]}{$func}($src,$dest,$_);
+    $archives{$ext[1]}{$func}($src,$dest,getTarOption(@ext));
   } else {
     $archives{$ext[1]}{$func}($src,$dest);
   }
