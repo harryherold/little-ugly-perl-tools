@@ -56,7 +56,22 @@ sub getTarOption(@)
     }
 }
 
-if( @ARGV < 3 ){
+sub showContent($)
+{
+    my $tar = $_[1];
+    my $cmd = "tar tvf";
+
+    if( defined $_[2] ) {
+      $cmd .= $_[2];
+    }
+
+    unless(-e $tar) {
+      print "No archive found\n";
+      exit 0;
+    }
+    exec $cmd.' '.$tar;
+}
+if( @ARGV < 2 ){
   print "Wrong argument count\n";
   print "---------------------\n";
   print "try this :\n";
@@ -64,19 +79,17 @@ if( @ARGV < 3 ){
   print "action:\n";
   print "-c => compress\n";
   print "-x => extract\n";
+  print "-t => show content of archives\n";
   print "supported archives: tar, tar.gz, tar.xv, tar.bz2\n";
   exit 0;
 }
 my $func = $ARGV[0];
 
-if( length($func) != 2 || ( $func ne "-c" && $func ne "-x" ) ) {
-  print "Wrong Option choose between -c and -x\n";
-  exit 0;
-}
 my %archives = (
   "tar" => {
     "-x" => \&xtar,
     "-c" => \&ctar,
+    "-t" => \&showContent,
   },
 );
 
@@ -93,7 +106,7 @@ my $src = join(' ', @ARGV[2..$#ARGV]);
 
 my @ext = ();
 
-if( $func eq "-c" ) {
+if( $func eq "-c" || $func eq "-t") {
   if ($dest =~ m/^.*\..*/) {
     @ext = split(/\./,$dest,3);
   } else {
