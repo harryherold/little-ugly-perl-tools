@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# cmd-packer [-c ]/[-x] dest src
+# cmd-packer [-c ]/[-x]/[-t] dest src
 #supports:
 # tar
 # tar.gz
@@ -12,6 +12,7 @@ use strict;
 use warnings;
 use Data::Dumper;
 use Switch;
+use File::stat;
 
 sub xtar($$)
 {
@@ -26,7 +27,7 @@ sub xtar($$)
   unless( -d $dest ) {
     `mkdir $dest`;
   }
-  `$cmd -C $dest`;
+  exec $cmd.' -C '.$dest;
 }
 
 sub ctar ($$)
@@ -40,6 +41,8 @@ sub ctar ($$)
   }
   $cmd .= " $dest $src";
   `$cmd`;
+  my $tar = stat($dest);
+  print "total size : ",$tar->size," bytes\n";
 }
 
 sub getTarOption(@)
@@ -106,7 +109,7 @@ elsif( $func eq "-x" ) {
     exit 0;
   }
 } else {
-  print "Wrong file type\n";
+  print "Wrong Option\n";
   exit 0;
 }
 
