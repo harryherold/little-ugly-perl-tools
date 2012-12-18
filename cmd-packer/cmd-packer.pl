@@ -44,7 +44,14 @@ sub ctar ($$)
   my $tar = stat($dest);
   print "total size : ",$tar->size," bytes\n";
 }
-
+sub czip($$)
+{
+  my $cmd = "zip -r ";
+  my $src = shift;
+  my $dest = shift;
+  open(ZIP,"| $cmd $dest $src") || die "Failed: $!\n";
+  close(ZIP);
+}
 sub getTarOption(@)
 {
     my @ext = shift;
@@ -90,6 +97,9 @@ my %archives = (
     "-x" => \&xtar,
     "-c" => \&ctar,
     "-t" => \&showContent,
+  },
+  "zip" => {
+    "-c" => \&czip,
   },
 );
 
