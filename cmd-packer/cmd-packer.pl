@@ -5,8 +5,8 @@
 # tar.gz
 # tar.bz2
 # tar.xv
-#next support:
 # zip
+#next support:
 # rar
 use strict;
 use warnings;
@@ -44,26 +44,8 @@ sub ctar ($$)
   my $tar = stat($dest);
   print "total size : ",$tar->size," bytes\n";
 }
-sub czip($$)
-{
-  my $cmd = "zip -r ";
-  my $src = shift;
-  my $dest = shift;
-  open(ZIP,"| $cmd $dest $src") || die "Failed: $!\n";
-  close(ZIP);
-}
-sub getTarOption(@)
-{
-    my @ext = shift;
-    switch( $ext[2] ) {
-        case "xz" { return "J"}
-        case "gz" { return "z"}
-        case "bz2" { return "j"}
-        else {return ""}
-    }
-}
 
-sub showContent($)
+sub showTar($)
 {
     my $tar = $_[1];
     my $cmd = "tar tvf";
@@ -78,6 +60,45 @@ sub showContent($)
     }
     exec $cmd.' '.$tar;
 }
+
+sub getTarOption(@)
+{
+    my @ext = shift;
+    switch( $ext[2] ) {
+        case "xz" { return "J"}
+        case "gz" { return "z"}
+        case "bz2" { return "j"}
+        else {return ""}
+    }
+}
+
+sub czip($$)
+{
+  my $src = shift;
+  my $dest = shift;
+  open(ZIP,"| zip -r $dest $src") || die "Failed: $!\n";
+  close(ZIP);
+}
+
+sub xzip($$)
+{
+  my $src = shift;
+  my $dest = shift;
+  open(ZIP,"| unzip -o $src -d $dest") || die "Failed: $!\n";
+  close(ZIP);
+}
+
+sub showZip($)
+{
+  my $zip = $_[1];
+  unless(-e $zip) {
+      print "No archive found\n";
+      exit 0;
+  }
+  open(ZIP,"| unzip -l $zip") || die "Failed: $!\n";
+  close(ZIP);
+}
+
 if( @ARGV < 2 ){
   print "Wrong argument count\n";
   print "---------------------\n";
@@ -96,10 +117,12 @@ my %archives = (
   "tar" => {
     "-x" => \&xtar,
     "-c" => \&ctar,
-    "-t" => \&showContent,
+    "-t" => \&showTar,
   },
   "zip" => {
     "-c" => \&czip,
+    "-x" => \&xzip,
+    "-t" => \&showZip,
   },
 );
 
