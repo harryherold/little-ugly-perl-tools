@@ -6,7 +6,6 @@
 # tar.bz2
 # tar.xv
 # zip
-#next support:
 # rar
 use strict;
 use warnings;
@@ -99,6 +98,36 @@ sub showZip($)
   close(ZIP);
 }
 
+sub crar($$)
+{
+  my $src = shift;
+  my $dest = shift;
+  open(RAR,"| rar a $dest $src") || die "Failed: $!\n";
+  close(RAR);
+}
+
+sub xrar($$)
+{
+  my $src = shift;
+  my $dest = shift;
+  unless( -d $dest ) {
+    `mkdir $dest`;
+  }
+  open(RAR,"| unrar x -o+ $src $dest") || die "Failed: $!\n";
+  close(RAR);
+}
+
+sub showRar($)
+{
+  my $rar = $_[1];
+  unless(-e $rar) {
+      print "No archive found\n";
+      exit 0;
+  }
+  open(RAR,"| unrar l $rar") || die "Failed: $!\n";
+  close(RAR);
+}
+
 if( @ARGV < 2 ){
   print "Wrong argument count\n";
   print "---------------------\n";
@@ -123,6 +152,11 @@ my %archives = (
     "-c" => \&czip,
     "-x" => \&xzip,
     "-t" => \&showZip,
+  },
+  "rar" => {
+    "-c" => \&crar,
+    "-x" => \&xrar,
+    "-t" => \&showRar,
   },
 );
 
